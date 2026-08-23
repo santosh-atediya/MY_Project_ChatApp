@@ -156,3 +156,34 @@ export const onboard = async (req, res) => {
     res.status(500).json({ message: "Internal server error." });
   }
 }
+
+export const updateProfile = async (req, res) => {
+  try {
+    const { fullName, bio, skill, language, location, image } = req.body;
+
+    if (!fullName || !bio || !skill || !language || !location) {
+      return res.status(400).json({ message: "All profile fields are required." });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      { fullName, bio, skill, language, location, image },
+      { new: true, runValidators: true },
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    await upsertStreamUser({
+      id: updatedUser._id.toString(),
+      name: updatedUser.fullName,
+      image: updatedUser.image || "",
+    });
+
+    res.status(200).json({ user: updatedUser });
+  } catch (error) {
+    console.log("Error in update profile controller:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};

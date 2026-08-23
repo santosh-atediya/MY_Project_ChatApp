@@ -1,74 +1,92 @@
-import React, { useState } from 'react'
-import useAuthUser from '../hooks/useAuthUser'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import toast from 'react-hot-toast'
-import { completeOnboarding } from '../lib/api'
-import {CameraIcon, ShuffleIcon} from "lucide-react"
-import { LANGUAGES, SKILLS } from '../constants'
+import React, { useState } from "react";
+import useAuthUser from "../hooks/useAuthUser";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
+import { completeOnboarding, updateProfile } from "../lib/api";
+import { CameraIcon, ShuffleIcon } from "lucide-react";
+import { LANGUAGES, SKILLS } from "../constants";
 
-const OnboardingPage = () => {
-  const { authenticatedUser } = useAuthUser()
-  const queryClient = useQueryClient()
+const OnboardingPage = ({ editMode = false }) => {
+  const { authenticatedUser } = useAuthUser();
+  const queryClient = useQueryClient();
 
   const [formData, setFormData] = useState({
-    fullName: authenticatedUser?.fullName || '',
-    image: authenticatedUser?.image || '',
-    skill: authenticatedUser?.skill || '',
-    language: authenticatedUser?.language || '',
-    location: authenticatedUser?.location || '',
-    bio: authenticatedUser?.bio || '',
-  })
+    fullName: authenticatedUser?.fullName || "",
+    image: authenticatedUser?.image || "",
+    skill: authenticatedUser?.skill || "",
+    language: authenticatedUser?.language || "",
+    location: authenticatedUser?.location || "",
+    bio: authenticatedUser?.bio || "",
+  });
 
-  const {mutate: onboardingMutation, isPending} = useMutation({
-    mutationFn: completeOnboarding,
+  const { mutate: onboardingMutation, isPending } = useMutation({
+    mutationFn: editMode ? updateProfile : completeOnboarding,
     onSuccess: () => {
-      queryClient.invalidateQueries({queryKey: ['authUser']})
-      toast.success("Profile Onboarded successfully")
+      queryClient.invalidateQueries({ queryKey: ["authUser"] });
+      toast.success(
+        editMode
+          ? "Profile updated successfully"
+          : "Profile onboarded successfully",
+      );
     },
     onError: (error) => {
-      toast.error(error.reposnse.data.message)
-    }
-  })
+      toast.error(error.reposnse.data.message);
+    },
+  });
 
   const handleOnboarding = (e) => {
-    e.preventDefault()
-    onboardingMutation(formData)
-  }
+    e.preventDefault();
+    onboardingMutation(formData);
+  };
 
-  const handleRandomAvatar = ()=> {
-    const idx = Math.floor(Math.random() * 1000) + 1; 
-    const randomAvatar = `https://api.dicebear.com/9.x/avataaars/svg?seed=${idx}&backgroundColor=ffd5dc&style=circle`
-    setFormData({...formData, image: randomAvatar})
-    toast.success("Successfully changed random avatar")
-  }
+  const handleRandomAvatar = () => {
+    const idx = Math.floor(Math.random() * 1000) + 1;
+    const randomAvatar = `https://api.dicebear.com/9.x/avataaars/svg?seed=${idx}&backgroundColor=ffd5dc&style=circle`;
+    setFormData({ ...formData, image: randomAvatar });
+    toast.success("Successfully changed random avatar");
+  };
 
   return (
-    <div className='h-screen w-full flexCenter'>
-      <div className='card card-side bg-base-100 card-border border-base-300 card-sm max-w-200 gap-6 p-3'>
-        <div className='card-body w-full'>
+    <div className="h-screen w-full flexCenter">
+      <div className="card card-side bg-base-100 card-border border-base-300 card-sm max-w-200 gap-6 p-3">
+        <div className="card-body w-full">
           {/* FORM */}
           <form onSubmit={handleOnboarding}>
             <div className="my-8">
               <div className="flexCenter flex-col gap-3 mb-6">
                 <div>
-                  <h2 className='card-title'>Complete Onboarding</h2>
-                  <p className="para">Please complete your profile to get started with Pingpong.</p>
+                  <h2 className="card-title">Complete Onboarding</h2>
+                  <p className="para">
+                    Please complete your profile to get started with Pingpong.
+                  </p>
                 </div>
                 {/* Profile Image */}
                 {formData.image ? (
-                  <img src={formData.image} alt="Profile Preview" className="h-22 object-cover" />
+                  <img
+                    src={formData.image}
+                    alt="Profile Preview"
+                    className="h-22 object-cover"
+                  />
                 ) : (
                   <CameraIcon className="size-12 text-base-content opacity-40" />
                 )}
-                <button type='button' onClick={handleRandomAvatar} className='btn btn-info btn-xs'>
-                  <ShuffleIcon className='size-4'/>  Generate another
+                <button
+                  type="button"
+                  onClick={handleRandomAvatar}
+                  className="btn btn-info btn-xs"
+                >
+                  <ShuffleIcon className="size-4" /> Generate another
                 </button>
               </div>
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <fieldset className="fieldset">
                   <legend className="fieldset-legend">Full Name</legend>
                   <label className="input validator">
-                    <svg className="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <svg
+                      className="h-[1em] opacity-50"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                    >
                       <g
                         strokeLinejoin="round"
                         strokeLinecap="round"
@@ -81,7 +99,9 @@ const OnboardingPage = () => {
                       </g>
                     </svg>
                     <input
-                      onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, fullName: e.target.value })
+                      }
                       value={formData.fullName}
                       type="text"
                       required
@@ -94,7 +114,8 @@ const OnboardingPage = () => {
                   </label>
                   <p className="validator-hint hidden">
                     Must be 3 to 50 characters
-                    <br />containing only letters, spaces, hyphens or apostrophes
+                    <br />
+                    containing only letters, spaces, hyphens or apostrophes
                   </p>
                 </fieldset>
                 <fieldset className="fieldset">
@@ -129,11 +150,20 @@ const OnboardingPage = () => {
                 </fieldset>
               </div>
               {/* Language & Skill */}
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <fieldset className="fieldset">
                   <legend className="fieldset-legend">Language</legend>
-                  <select value={formData.value} onChange={(e) => setFormData({ ...formData, language: e.target.value })} defaultValue="Pick your language" className="select">
-                    <option disabled={true}>Pick your language</option>
+                  <select
+                    required
+                    value={formData.language}
+                    onChange={(e) =>
+                      setFormData({ ...formData, language: e.target.value })
+                    }
+                    className="select"
+                  >
+                    <option disabled value="">
+                      Pick your language
+                    </option>
                     {LANGUAGES.map((lang) => (
                       <option key={lang} value={lang.toLowerCase()}>
                         {lang}
@@ -143,8 +173,17 @@ const OnboardingPage = () => {
                 </fieldset>
                 <fieldset className="fieldset">
                   <legend className="fieldset-legend">Skill</legend>
-                  <select value={formData.value} onChange={(e) => setFormData({ ...formData, skill: e.target.value })} defaultValue="Select skill you're learning" className="select">
-                    <option disabled={true}>Select skill you're learning</option>
+                  <select
+                    required
+                    value={formData.skill}
+                    onChange={(e) =>
+                      setFormData({ ...formData, skill: e.target.value })
+                    }
+                    className="select"
+                  >
+                    <option disabled value="">
+                      Select skill you're learning
+                    </option>
                     {SKILLS.map((skill) => (
                       <option key={skill} value={skill.toLowerCase()}>
                         {skill}
@@ -154,7 +193,7 @@ const OnboardingPage = () => {
                 </fieldset>
               </div>
               {/* Bio */}
-               <fieldset className="fieldset">
+              <fieldset className="fieldset">
                 <legend className="fieldset-legend">Bio</legend>
                 <label className="input min-h-16 flex w-full items-start py-3">
                   <svg
@@ -186,12 +225,19 @@ const OnboardingPage = () => {
               </fieldset>
             </div>
             {/* Submit button */}
-            <button type='submit' className='btn btn-primary w-full' disabled={isPending}>Complete Onboarding</button>
+            <button
+              type="submit"
+              className="btn btn-primary w-full"
+              disabled={isPending}
+            >
+              {isPending && <span className="loading loading-spinner" />}
+              {editMode ? "Save Profile" : "Complete Onboarding"}
+            </button>
           </form>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default OnboardingPage
+export default OnboardingPage;

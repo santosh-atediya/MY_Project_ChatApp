@@ -9,7 +9,7 @@ import chatRouter from './routes/chatRoutes.js';
 import path from 'path';
 
 const app = express(); // Initialize an express app
-const PORT = process.env.PORT || 3000; // Define the port
+const PORT = process.env.PORT || 2000; // Define the port
 const __dirname = path.resolve(); // Get the current directory path
 
 await connectDB(); // Establish a Connection to the database
