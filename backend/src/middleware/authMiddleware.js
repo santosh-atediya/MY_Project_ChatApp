@@ -23,6 +23,6 @@ export const authUser = async (req, res, next) => {
         
     } catch (error) {
         console.log("Error in auth middleware:", error.message);
-        return res.status(500).json({ message: "Internal server error." }); 
+        return res.status(401).json({ message: "Unauthorized: Invalid or expired token." }); 
     }
 }

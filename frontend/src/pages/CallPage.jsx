@@ -1,4 +1,4 @@
- import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   StreamVideo,
   StreamVideoClient,
@@ -70,6 +70,19 @@ const CallPage = () => {
     };
 
     initCall();
+
+    return () => {
+      if (call) {
+        call.leave().catch((error) => {
+          console.error("Error leaving call:", error);
+        });
+      }
+      if (client) {
+        client.disconnectUser().catch((error) => {
+          console.error("Error disconnecting video client:", error);
+        });
+      }
+    };
   }, [tokenData, authenticatedUser, callId]);
 
   if (isLoading || isConnecting) return <LoadingPage />;
@@ -99,7 +112,13 @@ const CallContent = () => {
 
   const navigate = useNavigate();
 
-  if (callingState === CallingState.LEFT) return navigate("/");
+  useEffect(() => {
+    if (callingState === CallingState.LEFT) {
+      navigate("/");
+    }
+  }, [callingState, navigate]);
+
+  if (callingState === CallingState.LEFT) return null;
 
   return (
     <StreamTheme>

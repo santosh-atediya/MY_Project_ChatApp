@@ -5,10 +5,12 @@ import toast from "react-hot-toast";
 import { completeOnboarding, updateProfile } from "../lib/api";
 import { CameraIcon, ShuffleIcon } from "lucide-react";
 import { LANGUAGES, SKILLS } from "../constants";
+import { useNavigate } from "react-router-dom";
 
 const OnboardingPage = ({ editMode = false }) => {
   const { authenticatedUser } = useAuthUser();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     fullName: authenticatedUser?.fullName || "",
@@ -21,16 +23,17 @@ const OnboardingPage = ({ editMode = false }) => {
 
   const { mutate: onboardingMutation, isPending } = useMutation({
     mutationFn: editMode ? updateProfile : completeOnboarding,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["authUser"] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["authUser"] });
       toast.success(
         editMode
           ? "Profile updated successfully"
           : "Profile onboarded successfully",
       );
+      navigate(editMode ? "/" : "/");
     },
     onError: (error) => {
-      toast.error(error.reposnse.data.message);
+      toast.error(error.response?.data?.message || "Unable to save profile");
     },
   });
 

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { getStreamToken } from "../lib/api";
 import useAuthUser from "../hooks/useAuthUser";
 import { StreamChat } from "stream-chat";
@@ -22,6 +22,7 @@ const STREAM_API_KEY = import.meta.env.VITE_STREAM_API_KEY;
 
 const ChatPage = () => {
   const { id: targetUserId } = useParams();
+  const navigate = useNavigate();
   const { authenticatedUser } = useAuthUser();
 
   const [chatClient, setChatClient] = useState(null);
@@ -78,15 +79,19 @@ const ChatPage = () => {
     initChat();
   }, [tokenData, authenticatedUser, targetUserId]);
 
-  const handleVideoCall = () => {
+  const handleVideoCall = async () => {
     if (channel) {
       const callUrl = `${window.location.origin}/call/${channel.id}`;
 
-      channel.sendMessage({
-        text: `I've started a video call. Join me here: ${callUrl}`,
-      });
+      try {
+        await channel.sendMessage({
+          text: `I've started a video call. Join me here: ${callUrl}`,
+        });
+      } catch (error) {
+        console.error("Failed to send video call message:", error);
+      }
 
-      toast.success("Video call link has been sent");
+      navigate(`/call/${channel.id}`);
     }
   };
 
