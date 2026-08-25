@@ -11,6 +11,7 @@ import path from 'path';
 const app = express(); // Initialize an express app
 const PORT = process.env.PORT || 2000; // Define the port
 const __dirname = path.resolve(); // Get the current directory path
+const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER === 'true';
 
 await connectDB(); // Establish a Connection to the database
 
@@ -18,12 +19,19 @@ await connectDB(); // Establish a Connection to the database
 const allowedOrigins = [
   "https://my-project-chat-app-8iaq.vercel.app",
   "https://my-project-realtimechat.vercel.app",
-  "http://localhost:5173"
+  "https://my-project-chatapp.vercel.app",
+  "http://localhost:5173",
+  ...(process.env.FRONTEND_URL || "").split(",").map((origin) => origin.trim()).filter(Boolean)
 ];
 
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error(`CORS blocked origin: ${origin}`));
+    },
     credentials: true,
   })
 );

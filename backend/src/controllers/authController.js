@@ -4,6 +4,14 @@ import bcrypt from 'bcryptjs';
 import jwt from "jsonwebtoken"
 import { upsertStreamUser } from '../config/stream.js';
 
+const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER === 'true';
+const authCookieOptions = {
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+  httpOnly: true,
+  sameSite: isProduction ? 'none' : 'lax',
+  secure: isProduction,
+};
+
 
 export const signup = async (req, res) => {
   const { fullName, email, password } = req.body;
@@ -51,12 +59,7 @@ export const signup = async (req, res) => {
 
     const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
     
-    res.cookie('token', token, {
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      httpOnly: true, // Prevent XSS Attacks
-      sameSite: 'strict', // CSRF Protection
-      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-    })
+    res.cookie('token', token, authCookieOptions);
 
     res.status(201).json({user: newUser})
 
@@ -85,12 +88,7 @@ export const login = async (req, res) => {
     
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
-    res.cookie('token', token, {
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      httpOnly: true, // Prevent XSS Attacks
-      sameSite: 'strict', // CSRF Protection
-      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-    })
+    res.cookie('token', token, authCookieOptions);
 
     res.status(200).json({user});
 
@@ -101,7 +99,7 @@ export const login = async (req, res) => {
 }
 
 export const logout = (req, res) => {
-  res.clearCookie('token')
+  res.clearCookie('token', authCookieOptions)
   res.status(200).json({ message: "Logged out successfully." });
 }
 
