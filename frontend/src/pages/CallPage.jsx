@@ -36,6 +36,9 @@ const CallPage = () => {
   });
 
   useEffect(() => {
+    let activeCall;
+    let activeClient;
+
     const initCall = async () => {
       if (!tokenData?.token || !authenticatedUser || !callId) return;
       try {
@@ -52,10 +55,14 @@ const CallPage = () => {
           user,
           token: tokenData.token,
         });
+        activeClient = videoClient;
 
         const callInstance = videoClient.call("default", callId);
+        activeCall = callInstance;
 
         await callInstance.join({ create: true });
+        await callInstance.camera.enable();
+        await callInstance.microphone.enable();
 
         console.log("Joined call successfully");
 
@@ -72,13 +79,13 @@ const CallPage = () => {
     initCall();
 
     return () => {
-      if (call) {
-        call.leave().catch((error) => {
+      if (activeCall) {
+        activeCall.leave().catch((error) => {
           console.error("Error leaving call:", error);
         });
       }
-      if (client) {
-        client.disconnectUser().catch((error) => {
+      if (activeClient) {
+        activeClient.disconnectUser().catch((error) => {
           console.error("Error disconnecting video client:", error);
         });
       }
