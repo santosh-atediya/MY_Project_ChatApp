@@ -15,10 +15,19 @@ const __dirname = path.resolve(); // Get the current directory path
 await connectDB(); // Establish a Connection to the database
 
 // Middleware Setup
-app.use(cors({
-  origin: process.env.CLIENT_URL || "https://my-project-realtimechat.vercel.app", // Allow requests from the client URL
-  credentials: true, // Allow cookies to be sent
-}))
+const allowedOrigins = [
+  "https://my-project-chat-app-8iaq.vercel.app",
+  "https://my-project-realtimechat.vercel.app",
+  "http://localhost:5173"
+];
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+  })
+);
+
 app.use(express.json()); // Parse JSON request bodies
 app.use(cookieParser()); // Cookie parser middleware to parse http cookies
 
