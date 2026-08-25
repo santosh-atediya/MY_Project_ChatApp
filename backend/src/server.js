@@ -16,7 +16,7 @@ await connectDB(); // Establish a Connection to the database
 
 // Middleware Setup
 app.use(cors({
-  origin: process.env.CLIENT_URL, // Allow requests from the client URL
+  origin: process.env.CLIENT_URL || "https://my-project-realtimechat.vercel.app", // Allow requests from the client URL
   credentials: true, // Allow cookies to be sent
 }))
 app.use(express.json()); // Parse JSON request bodies
